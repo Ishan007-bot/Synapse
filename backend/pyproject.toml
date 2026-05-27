@@ -11,6 +11,8 @@ dependencies = [
     "neo4j>=5.26.0",
     # Document sources
     "wikipedia-api>=0.7.1",
+    # Local embeddings (pulls torch + transformers)
+    "sentence-transformers>=3.0.0",
     # Config
     "pydantic>=2.9.0",
     "pydantic-settings>=2.6.0",
