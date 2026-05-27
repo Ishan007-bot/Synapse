@@ -40,5 +40,11 @@ class Settings(BaseSettings):
     chunk_size: int = 800
     chunk_overlap: int = 120
 
+    # Embeddings / retrieval
+    embedding_model: str = "BAAI/bge-small-en-v1.5"  # 384-dim, local, free
+    # BGE retrieval works best when the *query* (not the docs) gets this prefix.
+    query_instruction: str = "Represent this sentence for searching relevant passages: "
+    top_k: int = 5
+
 
 settings = Settings()

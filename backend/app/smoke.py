@@ -14,6 +14,7 @@ from __future__ import annotations
 import sys
 
 from .config import settings
+from .console import enable_utf8
 from .db import Neo4jClient
 from .llm import Message, get_provider
 
@@ -47,6 +48,7 @@ def check_neo4j() -> bool:
 
 
 def main() -> int:
+    enable_utf8()
     print("=== Synapse (Graph RAG) — Phase 0 smoke test ===")
     llm_ok = check_llm()
     neo4j_ok = check_neo4j()
