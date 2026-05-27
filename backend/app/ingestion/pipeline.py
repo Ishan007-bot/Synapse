@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 
 from ..config import settings
+from ..console import enable_utf8
 from ..db import Neo4jClient
 from .chunker import split_text
 from .corpus import CORPUS
@@ -107,6 +108,7 @@ def ingest(
 
 
 def main() -> None:
+    enable_utf8()
     parser = argparse.ArgumentParser(description="Ingest the Wikipedia corpus into Neo4j.")
     parser.add_argument("--limit", type=int, default=None, help="only ingest the first N titles")
     parser.add_argument("--reset", action="store_true", help="wipe existing docs/chunks first")
