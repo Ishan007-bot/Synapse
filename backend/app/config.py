@@ -36,5 +36,9 @@ class Settings(BaseSettings):
     neo4j_user: str = "neo4j"
     neo4j_password: str = "graphrag123"
 
+    # Chunking
+    chunk_size: int = 800
+    chunk_overlap: int = 120
+
 
 settings = Settings()

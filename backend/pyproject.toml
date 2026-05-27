@@ -9,6 +9,8 @@ dependencies = [
     "google-genai>=0.7.0",
     # Graph + vector database
     "neo4j>=5.26.0",
+    # Document sources
+    "wikipedia-api>=0.7.1",
     # Config
     "pydantic>=2.9.0",
     "pydantic-settings>=2.6.0",

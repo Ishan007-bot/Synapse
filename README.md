@@ -8,8 +8,8 @@ proving the improvement.
 
 See [PLAN.md](PLAN.md) for the full roadmap and architecture.
 
-**Status:** Phase 0 complete — project scaffold, Neo4j, and the swappable
-Groq/Gemini LLM provider layer.
+**Status:** scaffold + Neo4j + swappable Groq/Gemini LLM layer in place;
+document ingestion working (Wikipedia AI-field corpus chunked into Neo4j).
 
 ---
 
@@ -59,11 +59,30 @@ python -m app.smoke
 ```
 Expected output:
 ```
-=== Graph RAG — Phase 0 smoke test ===
+=== Synapse (Graph RAG) — Phase 0 smoke test ===
 [LLM] provider = groq
 [LLM] OK  -> Hello! ...
 [Neo4j] OK  -> {'project': 'graph-rag', 'ok': 1}
-All checks passed. Phase 0 is wired up correctly.
+All checks passed.
+```
+
+---
+
+## Ingest the corpus
+
+With Neo4j running, fetch the Wikipedia AI-field corpus, chunk it, and store it
+as `(:Document)-[:HAS_CHUNK]->(:Chunk)`:
+```bash
+cd backend
+python -m app.ingestion.pipeline --reset      # full corpus (~27 articles)
+python -m app.ingestion.pipeline --limit 3     # quick test with 3 articles
+```
+Options: `--chunk-size`, `--chunk-overlap`, `--reset` (wipe docs/chunks first).
+The article list lives in [backend/app/ingestion/corpus.py](backend/app/ingestion/corpus.py).
+
+Run the tests:
+```bash
+cd backend && python -m pytest -q
 ```
 
 ---
@@ -76,9 +95,11 @@ All checks passed. Phase 0 is wired up correctly.
 ├── PLAN.md                 # full roadmap
 └── backend/
     ├── pyproject.toml
+    ├── tests/              # pytest (chunker, ...)
     └── app/
         ├── config.py       # settings from .env
-        ├── smoke.py        # Phase 0 verification
+        ├── smoke.py        # connectivity check
         ├── llm/            # provider abstraction (groq, gemini)
-        └── db/             # neo4j client
+        ├── db/             # neo4j client
+        └── ingestion/      # corpus, wikipedia loader, chunker, pipeline
 ```
