@@ -8,8 +8,9 @@ proving the improvement.
 
 See [PLAN.md](PLAN.md) for the full roadmap and architecture.
 
-**Status:** scaffold + Neo4j + swappable Groq/Gemini LLM layer in place;
-document ingestion working (Wikipedia AI-field corpus chunked into Neo4j).
+**Status:** ingestion + local embeddings + Neo4j vector search + a working
+naive-RAG baseline (vector retrieval → grounded, cited LLM answers). Knowledge
+graph construction and hybrid retrieval come next.
 
 ---
 
@@ -80,6 +81,25 @@ python -m app.ingestion.pipeline --limit 3     # quick test with 3 articles
 Options: `--chunk-size`, `--chunk-overlap`, `--reset` (wipe docs/chunks first).
 The article list lives in [backend/app/ingestion/corpus.py](backend/app/ingestion/corpus.py).
 
+## Build the vector index
+
+Embed every chunk (local sentence-transformers) and create the Neo4j vector index:
+```bash
+cd backend
+python -m app.retrieval.build_index     # first run downloads the model (~130MB)
+```
+
+## Ask questions (naive RAG baseline)
+
+Needs an LLM key in `.env`. Embeds the question, retrieves top-k chunks, and
+generates a grounded, cited answer:
+```bash
+cd backend
+python -m app.rag "Who founded OpenAI?"
+python -m app.rag                            # interactive
+python -m app.rag --retrieve-only "..."      # show chunks only, no LLM (no key needed)
+```
+
 Run the tests:
 ```bash
 cd backend && python -m pytest -q
@@ -99,7 +119,12 @@ cd backend && python -m pytest -q
     └── app/
         ├── config.py       # settings from .env
         ├── smoke.py        # connectivity check
+        ├── console.py      # UTF-8 console helper
+        ├── embeddings.py   # local sentence-transformers embedder
+        ├── generation.py   # prompt + grounded, cited LLM answer
+        ├── rag.py          # naive RAG orchestrator + query CLI
         ├── llm/            # provider abstraction (groq, gemini)
         ├── db/             # neo4j client
-        └── ingestion/      # corpus, wikipedia loader, chunker, pipeline
+        ├── ingestion/      # corpus, wikipedia loader, chunker, pipeline
+        └── retrieval/      # vector index build + top-k search
 ```
