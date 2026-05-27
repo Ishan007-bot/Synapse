@@ -1,0 +1,28 @@
+[project]
+name = "synapse-backend"
+version = "0.1.0"
+description = "Synapse — a Graph RAG system: knowledge-graph-augmented retrieval over documents"
+requires-python = ">=3.11"
+dependencies = [
+    # LLM providers (both free tier)
+    "groq>=0.13.0",
+    "google-genai>=0.7.0",
+    # Graph + vector database
+    "neo4j>=5.26.0",
+    # Config
+    "pydantic>=2.9.0",
+    "pydantic-settings>=2.6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]

@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Env / secrets
+.env
+.env.local
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+
+# Neo4j local data (if mounted locally)
+neo4j_data/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

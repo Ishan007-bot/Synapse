@@ -1,0 +1,26 @@
+services:
+  neo4j:
+    image: neo4j:5.26
+    container_name: synapse-neo4j
+    ports:
+      - "7474:7474"   # Neo4j Browser (http://localhost:7474)
+      - "7687:7687"   # Bolt driver (used by the backend)
+    environment:
+      # user/password — keep in sync with NEO4J_USER / NEO4J_PASSWORD in .env
+      - NEO4J_AUTH=neo4j/graphrag123
+      # APOC procedures are handy for graph work in later phases
+      - NEO4J_PLUGINS=["apoc"]
+      # give the graph some memory headroom
+      - NEO4J_server_memory_heap_max__size=1G
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
