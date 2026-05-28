@@ -129,6 +129,20 @@ python -m app.graph_rag "Name AI models created by people who worked at OpenAI."
 python -m app.graph_rag --compare "..."        # naive vs graph side by side
 python -m app.graph_rag --retrieve-only "..."  # show context, no LLM
 python -m app.graph_rag --hops 3 "..."         # deeper traversal
+python -m app.graph_rag --stream "..."         # token-by-token output
+python -m app.graph_rag --json "..."           # structured payload (answer + sources + subgraph)
+```
+
+The `--json` shape (defined in [app/schemas.py](backend/app/schemas.py)) is the contract for the upcoming FastAPI + Next.js layers:
+```jsonc
+{ "answer": "...",
+  "sources": [{"name", "score", "via"}],
+  "chunks":  [{"id", "source", "text", "score"}],
+  "subgraph": {
+    "nodes": [{"id", "name", "type", "is_seed", "degree"}],
+    "edges": [{"source", "target", "predicate"}],
+    "seed_ids": ["..."]
+  } }
 ```
 
 Run the tests:
