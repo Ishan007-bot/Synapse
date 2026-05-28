@@ -86,6 +86,15 @@ class GeminiProvider(LLMProvider):
         max_tokens: int | None = None,
     ) -> dict:
         system, contents = self._split(messages)
+        # Disable "thinking" for 2.5+ models — the silent reasoning phase makes
+        # each call 10-30s slower with no quality gain for structured extraction.
+        # Older Gemini versions ignore the field, so it's safe to always pass.
+        thinking_config = None
+        if hasattr(types, "ThinkingConfig"):
+            try:
+                thinking_config = types.ThinkingConfig(thinking_budget=0)
+            except TypeError:
+                thinking_config = None
         resp = self._client.models.generate_content(
             model=self._model,
             contents=contents,
@@ -94,6 +103,7 @@ class GeminiProvider(LLMProvider):
                 temperature=temperature,
                 max_output_tokens=max_tokens,
                 response_mime_type="application/json",
+                thinking_config=thinking_config,
             ),
         )
         return json.loads(resp.text or "{}")
