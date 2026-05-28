@@ -145,6 +145,37 @@ The `--json` shape (defined in [app/schemas.py](backend/app/schemas.py)) is the 
   } }
 ```
 
+## Run the HTTP API
+
+The same Graph RAG core, exposed over HTTP for the upcoming Next.js frontend
+(and for direct curl/Postman use). **Make sure the `.venv` is activated first**
+(your global Python doesn't have these deps):
+```bash
+# from the project root:
+# Windows PowerShell:   .\.venv\Scripts\Activate.ps1
+# macOS / Linux:        source .venv/bin/activate
+
+cd backend
+python -m uvicorn app.api.main:app --reload --port 8000
+```
+…or without activating, call the venv's interpreter directly:
+```bash
+cd backend
+..\.venv\Scripts\python.exe -m uvicorn app.api.main:app --reload --port 8000   # Windows
+# ../.venv/bin/python -m uvicorn app.api.main:app --reload --port 8000          # macOS/Linux
+```
+Then open http://localhost:8000/docs for interactive Swagger UI.
+
+| Endpoint | What |
+|---|---|
+| `GET /health` | liveness |
+| `GET /stats` | corpus + graph counts |
+| `GET /graph?limit_nodes=200` | full graph (top-N by degree) |
+| `GET /graph/subgraph?question=…` | retrieved subgraph for a question (no LLM) |
+| `POST /query` | Graph RAG, returns full `RAGAnswer` JSON |
+| `POST /query/stream` | Graph RAG over **SSE**: `context` → many `token` → `done` |
+| `POST /query/naive` | vector-only baseline (for the comparison demo) |
+
 Run the tests:
 ```bash
 cd backend && python -m pytest -q
@@ -173,5 +204,7 @@ cd backend && python -m pytest -q
         ├── ingestion/      # corpus, wikipedia loader, chunker, pipeline
         ├── graph/          # entity/relation extraction, resolution, neo4j writes
         ├── retrieval/      # chunk + entity vector indexes, entity linker, traversal, hybrid
-        └── graph_rag.py    # Graph RAG orchestrator + CLI
+        ├── graph_rag.py    # Graph RAG orchestrator + CLI
+        ├── schemas.py      # Pydantic response shapes (API contract)
+        └── api/            # FastAPI app (lifespan, CORS, endpoints, SSE)
 ```
