@@ -173,7 +173,9 @@ def extract_from_document(
     text: str,
     provider: "LLMProvider | None" = None,
     *,
-    max_tokens: int = 4096,
+    # 8K is large enough for both: Groq's plain output AND Gemini-2.5's
+    # thinking-tokens-plus-output budget on the JSON we ask for.
+    max_tokens: int = 8192,
     max_chars_per_window: int = 12_000,
 ) -> ExtractionResult:
     """Extract entities and relations from a full document."""

@@ -78,8 +78,13 @@ def main() -> None:
                     print(f"  ! no text for {title}; skipping")
                     continue
                 result = extract_from_document(title, text, provider)
-                cache.put(title, result)
-                tag = "ok"
+                # Only cache real results — caching empties would silently lock in failures
+                # (the next run would skip the doc instead of retrying).
+                if result.entities:
+                    cache.put(title, result)
+                    tag = "ok"
+                else:
+                    tag = "FAIL"
             print(
                 f"  {tag} {title}: "
                 f"{len(result.entities)} entities, {len(result.relations)} relations"
