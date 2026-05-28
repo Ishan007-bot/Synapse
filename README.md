@@ -176,6 +176,19 @@ Then open http://localhost:8000/docs for interactive Swagger UI.
 | `POST /query/stream` | Graph RAG over **SSE**: `context` → many `token` → `done` |
 | `POST /query/naive` | vector-only baseline (for the comparison demo) |
 
+## Run the frontend
+
+A Next.js + react-force-graph-2d UI: neumorphic editorial design, streaming
+chat, an interactive force-directed knowledge graph that lights up with each
+question's subgraph, and a toggle to compare Naive vs Graph RAG side by side.
+```bash
+cd frontend
+npm install          # first time only
+npm run dev          # http://localhost:3000
+```
+The frontend expects the FastAPI backend on `http://localhost:8000`. Set
+`NEXT_PUBLIC_API_BASE` if you run it elsewhere.
+
 Run the tests:
 ```bash
 cd backend && python -m pytest -q
