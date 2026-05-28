@@ -8,9 +8,11 @@ proving the improvement.
 
 See [PLAN.md](PLAN.md) for the full roadmap and architecture.
 
-**Status:** ingestion + local embeddings + Neo4j vector search + a working
-naive-RAG baseline (vector retrieval → grounded, cited LLM answers). Knowledge
-graph construction and hybrid retrieval come next.
+**Status:** end-to-end Graph RAG working. Ingestion → local embeddings → Neo4j
+vector index → LLM-based entity & relation extraction → 638-entity / 534-relation
+knowledge graph → hybrid retrieval (vectors + graph traversal) → grounded
+answers with citations. Naive-RAG baseline kept for the upcoming RAGAS
+comparison.
 
 ---
 
@@ -100,6 +102,35 @@ python -m app.rag                            # interactive
 python -m app.rag --retrieve-only "..."      # show chunks only, no LLM (no key needed)
 ```
 
+## Build the knowledge graph
+
+LLM-extracts entities & relations per document, dedupes them, and writes the
+graph into Neo4j. The `data/cache/extractions/` directory caches per-doc
+extractions so re-runs are free:
+```bash
+cd backend
+python -m app.graph.build                    # full corpus
+python -m app.graph.build --limit 3          # quick test
+python -m app.graph.build --reset            # wipe entities/relations first
+python -m app.graph.build --provider gemini  # override LLM for this run
+```
+
+After the graph build, rerun `python -m app.retrieval.build_index` to also
+embed the new entity names for the linker.
+
+## Ask questions (Graph RAG)
+
+Hybrid retrieval: vector chunks + entity linking + N-hop graph traversal +
+chunks linked via `:MENTIONED_IN`. Multi-hop questions that fail in naive RAG
+work here:
+```bash
+cd backend
+python -m app.graph_rag "Name AI models created by people who worked at OpenAI."
+python -m app.graph_rag --compare "..."        # naive vs graph side by side
+python -m app.graph_rag --retrieve-only "..."  # show context, no LLM
+python -m app.graph_rag --hops 3 "..."         # deeper traversal
+```
+
 Run the tests:
 ```bash
 cd backend && python -m pytest -q
@@ -123,8 +154,10 @@ cd backend && python -m pytest -q
         ├── embeddings.py   # local sentence-transformers embedder
         ├── generation.py   # prompt + grounded, cited LLM answer
         ├── rag.py          # naive RAG orchestrator + query CLI
-        ├── llm/            # provider abstraction (groq, gemini)
+        ├── llm/            # provider abstraction (groq, gemini) + JSON mode
         ├── db/             # neo4j client
         ├── ingestion/      # corpus, wikipedia loader, chunker, pipeline
-        └── retrieval/      # vector index build + top-k search
+        ├── graph/          # entity/relation extraction, resolution, neo4j writes
+        ├── retrieval/      # chunk + entity vector indexes, entity linker, traversal, hybrid
+        └── graph_rag.py    # Graph RAG orchestrator + CLI
 ```
