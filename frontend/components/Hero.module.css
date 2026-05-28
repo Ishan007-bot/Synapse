@@ -1,0 +1,158 @@
+.hero {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--s-16) var(--s-8) var(--s-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-8);
+}
+
+.head {
+  max-width: 880px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 var(--s-5);
+}
+
+.title {
+  margin: 0;
+}
+
+.italic {
+  font-style: italic;
+  font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+  color: var(--accent);
+}
+
+.lede {
+  font-size: 1.18rem;
+  line-height: 1.55;
+  color: var(--text-mid);
+  max-width: 64ch;
+  margin: var(--s-6) 0 0;
+}
+
+/* ── Input ───────────────────────────────────────────────────────────── */
+
+.inputWrap {
+  margin-top: var(--s-4);
+}
+
+/* The neumorphic input is a pressed well; the submit button sits inside it
+   as a raised circle, contrasting concave + convex on the same surface. */
+.inputForm {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: 10px 10px 10px var(--s-6);
+  background: var(--surface);
+  border-radius: var(--r-pill);
+  box-shadow: var(--neu-pressed-deep);
+  transition: box-shadow var(--transition);
+}
+.inputForm:focus-within {
+  box-shadow:
+    inset 6px 6px 14px var(--shadow-dark),
+    inset -6px -6px 14px var(--shadow-light),
+    0 0 0 3px var(--accent-glow);
+}
+
+.input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 1.08rem;
+  color: var(--text);
+  padding: 14px 0;
+  letter-spacing: -0.005em;
+}
+.input::placeholder { color: var(--text-faint); }
+.input:disabled { opacity: 0.6; }
+
+.submit {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--neu-raised);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+.submit:hover:not(:disabled) {
+  box-shadow: var(--neu-raised-lg);
+  transform: translateY(-1px);
+}
+.submit:active:not(:disabled) {
+  box-shadow: var(--neu-pressed);
+  transform: translateY(1px);
+}
+.submit:disabled {
+  color: var(--text-faint);
+  cursor: not-allowed;
+}
+
+.submitInner {
+  display: grid;
+  place-items: center;
+}
+
+.spin {
+  animation: synapse-pulse 1.4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* ── Sample question chips ───────────────────────────────────────────── */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.tryLabel {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-right: var(--s-1);
+}
+
+.chip {
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  color: var(--text-mid);
+  padding: 8px 16px;
+  background: var(--surface);
+  border-radius: var(--r-pill);
+  box-shadow: var(--neu-flat);
+  transition: box-shadow var(--transition-fast), color var(--transition-fast),
+              transform var(--transition-fast);
+  text-align: left;
+}
+.chip:hover:not(:disabled) {
+  box-shadow: var(--neu-raised);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+.chip:active:not(:disabled) {
+  box-shadow: var(--neu-pressed);
+  transform: translateY(0);
+}
+.chip:disabled { opacity: 0.5; cursor: not-allowed; }
+
+@media (max-width: 720px) {
+  .hero { padding: var(--s-10) var(--s-5) var(--s-8); }
+  .lede { font-size: 1.05rem; }
+}

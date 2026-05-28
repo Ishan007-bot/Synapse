@@ -1,0 +1,119 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-6);
+  padding: var(--s-6) var(--s-12);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--surface);
+  /* A single soft bottom shadow tells the eye that the header sits above the canvas */
+  box-shadow: 0 8px 24px -16px var(--shadow-dark);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+}
+
+/* Neumorphic glyph — a small "pressed" well with a raised dot inside.
+   Made entirely with CSS, no SVG dependency. */
+.mark {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--neu-pressed);
+  position: relative;
+  flex-shrink: 0;
+}
+.mark::after {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow:
+      3px 3px 6px var(--shadow-dark),
+     -3px -3px 6px var(--shadow-light),
+     inset 0 0 0 2px var(--accent);
+}
+
+.name {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+  font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 60;
+  color: var(--text);
+}
+
+.tagline {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-top: 4px;
+}
+
+.stats {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 14px;
+  background: var(--surface);
+  border-radius: var(--r-sm);
+  box-shadow: var(--neu-flat);
+  min-width: 60px;
+}
+
+.chipValue {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1rem;
+  color: var(--text);
+  line-height: 1;
+}
+
+.chipLabel {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-top: 4px;
+}
+
+.status {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  padding: 6px 10px;
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  box-shadow: var(--neu-pressed);
+}
+.statusOk  { color: #4a7c59; }
+.statusErr { color: #b94c4c; }
+
+@media (max-width: 880px) {
+  .header { flex-direction: column; padding: var(--s-5) var(--s-5); gap: var(--s-4); }
+  .stats { flex-wrap: wrap; justify-content: center; }
+}

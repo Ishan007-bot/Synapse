@@ -1,0 +1,146 @@
+/* The graph lives in a deeply pressed neumorphic well — it really looks like
+   a window cut into the cream surface, with the force-graph spinning inside it. */
+
+.well {
+  position: relative;
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  box-shadow: var(--neu-pressed-deep);
+  min-height: 480px;
+  height: 100%;
+  overflow: hidden;
+  padding: 0;
+}
+
+.emptyState {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-5);
+  color: var(--text-mute);
+  text-align: center;
+  padding: var(--s-8);
+}
+.emptyState p {
+  max-width: 32ch;
+  font-size: 0.96rem;
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* A small "compass" — three concentric pressed circles + an off-center accent dot.
+   Replaces a stock icon with something neumorphism-native. */
+.compass {
+  width: 110px;
+  height: 110px;
+  position: relative;
+}
+.compass span {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--surface);
+}
+.compass span:nth-child(1) { inset: 0;  box-shadow: var(--neu-pressed); }
+.compass span:nth-child(2) { inset: 14px; box-shadow: var(--neu-pressed); }
+.compass span:nth-child(3) {
+  width: 14px; height: 14px;
+  top: 40%; left: 60%;
+  background: var(--accent);
+  box-shadow:
+    0 0 18px var(--accent-glow),
+    2px 2px 4px var(--shadow-dark),
+    -1px -1px 3px var(--shadow-light);
+}
+
+/* Selected-node detail panel — a small raised card pinned to the top-left */
+.detail {
+  position: absolute;
+  top: var(--s-4);
+  left: var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-radius: var(--r);
+  box-shadow: var(--neu-raised);
+  max-width: 280px;
+  pointer-events: none;
+}
+
+.detailHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.detailDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.detailName {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.02rem;
+  color: var(--text);
+  font-variation-settings: "SOFT" 80, "opsz" 36;
+  line-height: 1.2;
+}
+.detailType {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  padding: 2px 8px;
+  background: var(--surface);
+  border-radius: var(--r-pill);
+  box-shadow: var(--neu-pressed);
+}
+.detailMeta {
+  display: flex;
+  gap: var(--s-3);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-mute);
+}
+.detailSeed {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* Legend pinned bottom-right */
+.legend {
+  position: absolute;
+  bottom: var(--s-4);
+  right: var(--s-4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border-radius: var(--r);
+  box-shadow: var(--neu-flat);
+  pointer-events: none;
+  max-width: 70%;
+  justify-content: flex-end;
+}
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+}
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
