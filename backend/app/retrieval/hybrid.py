@@ -20,8 +20,16 @@ from dataclasses import dataclass, field
 
 from ..db import Neo4jClient
 from ..embeddings import Embedder
+from ..schemas import (
+    ChunkInfo,
+    GraphEdge,
+    GraphNode,
+    RAGAnswer,
+    SourceInfo,
+    SubgraphPayload,
+)
 from .entity_linker import SeedEntity, link_entities
-from .graph_traversal import Triple, chunks_for_entities, expand_subgraph
+from .graph_traversal import EntityInfo, Triple, chunks_for_entities, expand_subgraph
 from .vector_store import RetrievedChunk, vector_search
 
 
@@ -31,6 +39,64 @@ class HybridContext:
     triples: list[Triple]
     seed_entities: list[SeedEntity]
     visited_entity_ids: set[str] = field(default_factory=set)
+    entity_info: dict[str, EntityInfo] = field(default_factory=dict)
+
+    # ── payload assembly (consumed by the API + frontend) ────────────────
+
+    def subgraph_payload(self) -> SubgraphPayload:
+        """Convert triples + entity info into a viz-ready node/edge graph."""
+        seed_ids = {s.id for s in self.seed_entities}
+        degree: dict[str, int] = {}
+        edges: list[GraphEdge] = []
+        used_ids: set[str] = set()
+
+        for t in self.triples:
+            edges.append(GraphEdge(source=t.source_id, target=t.target_id, predicate=t.predicate))
+            for nid in (t.source_id, t.target_id):
+                degree[nid] = degree.get(nid, 0) + 1
+                used_ids.add(nid)
+
+        # Make sure seed entities show up even if they had no edges in the subgraph.
+        for s in self.seed_entities:
+            used_ids.add(s.id)
+            self.entity_info.setdefault(s.id, EntityInfo(s.id, s.name, s.type))
+
+        nodes = [
+            GraphNode(
+                id=info.id,
+                name=info.name,
+                type=info.type or "Concept",
+                is_seed=info.id in seed_ids,
+                degree=degree.get(info.id, 0),
+            )
+            for nid, info in self.entity_info.items()
+            if nid in used_ids
+        ]
+        return SubgraphPayload(nodes=nodes, edges=edges, seed_ids=sorted(seed_ids))
+
+    def source_list(self) -> list[SourceInfo]:
+        """Unique source articles in the order they first appear."""
+        seen: set[str] = set()
+        sources: list[SourceInfo] = []
+        for c in self.chunks:
+            if c.source in seen:
+                continue
+            seen.add(c.source)
+            via = "vector" if c.score > 0 else "entity"
+            sources.append(SourceInfo(name=c.source, score=c.score, via=via))
+        return sources
+
+    def to_answer(self, answer_text: str) -> RAGAnswer:
+        """Assemble the full Pydantic response for the API/frontend."""
+        return RAGAnswer(
+            answer=answer_text,
+            sources=self.source_list(),
+            chunks=[
+                ChunkInfo(id=c.id, source=c.source, text=c.text, score=c.score)
+                for c in self.chunks
+            ],
+            subgraph=self.subgraph_payload(),
+        )
 
 
 def hybrid_retrieve(
@@ -54,9 +120,10 @@ def hybrid_retrieve(
     triples: list[Triple] = []
     visited: set[str] = set()
     entity_chunks: list[RetrievedChunk] = []
+    entity_info: dict[str, EntityInfo] = {}
 
     if seeds:
-        visited, triples = expand_subgraph(
+        visited, triples, entity_info = expand_subgraph(
             client,
             [s.id for s in seeds],
             hops=hops,
@@ -93,4 +160,5 @@ def hybrid_retrieve(
         triples=triples,
         seed_entities=seeds,
         visited_entity_ids=visited,
+        entity_info=entity_info,
     )
