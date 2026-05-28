@@ -44,3 +44,20 @@ class LLMProvider(ABC):
         max_tokens: int | None = None,
     ) -> Iterator[str]:
         """Yield response text incrementally (token/chunk deltas)."""
+
+    @abstractmethod
+    def generate_json(
+        self,
+        messages: list[Message],
+        *,
+        temperature: float = 0.0,
+        max_tokens: int | None = None,
+    ) -> dict:
+        """Force the model to return a JSON object and parse it.
+
+        Used for structured extraction (Phase 3 entity/relation extraction).
+        Implementations should use the provider's native JSON-mode (Groq
+        ``response_format={"type": "json_object"}``, Gemini
+        ``response_mime_type="application/json"``) so the output is reliably
+        parseable.
+        """

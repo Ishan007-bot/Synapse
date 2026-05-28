@@ -1,6 +1,7 @@
 """Groq provider — fast inference of open models (Llama 3.3 70B by default)."""
 from __future__ import annotations
 
+import json
 from typing import Iterator
 
 from groq import Groq
@@ -55,3 +56,19 @@ class GroqProvider(LLMProvider):
             delta = chunk.choices[0].delta.content
             if delta:
                 yield delta
+
+    def generate_json(
+        self,
+        messages: list[Message],
+        *,
+        temperature: float = 0.0,
+        max_tokens: int | None = None,
+    ) -> dict:
+        resp = self._client.chat.completions.create(
+            model=self._model,
+            messages=self._to_payload(messages),
+            temperature=temperature,
+            max_tokens=max_tokens,
+            response_format={"type": "json_object"},
+        )
+        return json.loads(resp.choices[0].message.content or "{}")

@@ -6,6 +6,7 @@ provider-agnostic `Message` list into that shape here.
 """
 from __future__ import annotations
 
+import json
 from typing import Iterator
 
 from google import genai
@@ -76,3 +77,23 @@ class GeminiProvider(LLMProvider):
         for chunk in stream:
             if chunk.text:
                 yield chunk.text
+
+    def generate_json(
+        self,
+        messages: list[Message],
+        *,
+        temperature: float = 0.0,
+        max_tokens: int | None = None,
+    ) -> dict:
+        system, contents = self._split(messages)
+        resp = self._client.models.generate_content(
+            model=self._model,
+            contents=contents,
+            config=types.GenerateContentConfig(
+                system_instruction=system,
+                temperature=temperature,
+                max_output_tokens=max_tokens,
+                response_mime_type="application/json",
+            ),
+        )
+        return json.loads(resp.text or "{}")
