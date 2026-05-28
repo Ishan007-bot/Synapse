@@ -29,7 +29,7 @@ class Settings(BaseSettings):
 
     # Gemini
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.0-flash"
+    gemini_model: str = "gemini-2.5-flash"
 
     # Neo4j
     neo4j_uri: str = "bolt://localhost:7687"
