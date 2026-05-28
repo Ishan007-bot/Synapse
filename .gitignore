@@ -19,6 +19,9 @@ dist/
 # Neo4j local data (if mounted locally)
 neo4j_data/
 
+# Local extraction cache (rebuildable from the LLM)
+data/
+
 # OS / editor
 .DS_Store
 Thumbs.db
