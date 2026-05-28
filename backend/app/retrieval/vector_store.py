@@ -11,6 +11,7 @@ from ..db import Neo4jClient
 from ..embeddings import Embedder
 
 INDEX_NAME = "chunk_embedding"
+ENTITY_INDEX_NAME = "entity_embedding"
 
 
 @dataclass
@@ -73,5 +74,73 @@ def vector_search(
     )
     return [
         RetrievedChunk(id=r["id"], text=r["text"], source=r["source"], score=r["score"])
+        for r in rows
+    ]
+
+
+# ── Entity vector index ────────────────────────────────────────────────────
+# Used in Phase 4 to map a free-text query to seed entities by similarity to
+# the entity's name (e.g. "Who founded Anthropic?" -> Anthropic, founder, ...).
+
+
+@dataclass
+class LinkedEntity:
+    id: str
+    name: str
+    type: str
+    score: float
+
+
+def ensure_entity_vector_index(client: Neo4jClient, dimension: int) -> None:
+    client.query(
+        f"CREATE VECTOR INDEX {ENTITY_INDEX_NAME} IF NOT EXISTS "
+        f"FOR (e:Entity) ON (e.embedding) "
+        f"OPTIONS {{ indexConfig: {{ "
+        f"`vector.dimensions`: {int(dimension)}, "
+        f"`vector.similarity_function`: 'cosine' }} }}"
+    )
+
+
+def backfill_entity_embeddings(
+    client: Neo4jClient,
+    embedder,
+    batch_size: int = 128,
+) -> int:
+    """Embed entity names so we can vector-link queries to entities."""
+    pending = client.query(
+        "MATCH (e:Entity) WHERE e.embedding IS NULL "
+        "RETURN e.id AS id, e.name AS name"
+    )
+    for start in range(0, len(pending), batch_size):
+        batch = pending[start : start + batch_size]
+        vectors = embedder.embed_documents([row["name"] for row in batch])
+        rows = [{"id": row["id"], "embedding": vec} for row, vec in zip(batch, vectors)]
+        client.query(
+            "UNWIND $rows AS row "
+            "MATCH (e:Entity {id: row.id}) "
+            "SET e.embedding = row.embedding",
+            rows=rows,
+        )
+    return len(pending)
+
+
+def entity_vector_search(
+    client: Neo4jClient,
+    embedder,
+    query: str,
+    k: int = 5,
+) -> list[LinkedEntity]:
+    """Top-k entities most semantically similar to the query."""
+    qv = embedder.embed_query(query)
+    rows = client.query(
+        f"CALL db.index.vector.queryNodes('{ENTITY_INDEX_NAME}', $k, $qv) "
+        "YIELD node, score "
+        "RETURN node.id AS id, node.name AS name, node.type AS type, score "
+        "ORDER BY score DESC",
+        k=k,
+        qv=qv,
+    )
+    return [
+        LinkedEntity(id=r["id"], name=r["name"], type=r["type"], score=r["score"])
         for r in rows
     ]
