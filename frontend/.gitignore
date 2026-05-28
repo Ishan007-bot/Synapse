@@ -1,0 +1,15 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# next.js build output
+.next/
+out/
+
+# misc
+.DS_Store
+*.log
+*.tsbuildinfo
+
+# Note: next-env.d.ts IS committed (Next.js generates it but it's part of the repo)
