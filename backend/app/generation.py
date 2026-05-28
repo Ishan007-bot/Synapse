@@ -62,12 +62,19 @@ HYBRID_SYSTEM_PROMPT = (
     "of artificial intelligence. You are given two kinds of context:\n"
     "  (a) KNOWLEDGE GRAPH FACTS — short, structured statements extracted from "
     "the corpus.\n"
-    "  (b) EXCERPTS — verbatim passages from the source articles.\n"
-    "Answer using ONLY this context. Multi-hop questions usually need you to "
-    "chain several facts together — do that step by step in your head, then "
-    "give the final answer concisely. Cite source article(s) in square "
-    "brackets, e.g. [OpenAI]. If the context does not contain the answer, "
-    "say you don't know — do not invent facts."
+    "  (b) EXCERPTS — verbatim passages from the source articles.\n\n"
+    "Rules:\n"
+    "1. Answer using ONLY this context. If the context does not contain the "
+    "answer, reply exactly: \"I don't know based on the provided context.\" "
+    "Do not invent facts.\n"
+    "2. For multi-hop questions, chain the relevant facts step by step before "
+    "stating the final answer. Keep the chain brief (1-2 short sentences) and "
+    "the final answer concise.\n"
+    "3. Cite source article(s) in square brackets after the statements they "
+    "support, e.g. \"[OpenAI]\" or \"[Anthropic, Andrew Ng]\". Only cite "
+    "sources that actually appear in the EXCERPTS.\n"
+    "4. Prefer the KNOWLEDGE GRAPH FACTS for connecting entities across "
+    "articles, and the EXCERPTS for direct quotation and nuance."
 )
 
 
@@ -104,3 +111,14 @@ def generate_hybrid_answer(
 ) -> str:
     provider = provider or get_provider()
     return provider.generate(_hybrid_messages(query, chunks, triples), temperature=0.1)
+
+
+def stream_hybrid_answer(
+    query: str,
+    chunks: list[RetrievedChunk],
+    triples: list[Triple],
+    provider: LLMProvider | None = None,
+) -> Iterator[str]:
+    """Yield Graph RAG answer text incrementally — what the FastAPI SSE endpoint will wrap."""
+    provider = provider or get_provider()
+    yield from provider.stream(_hybrid_messages(query, chunks, triples), temperature=0.1)
