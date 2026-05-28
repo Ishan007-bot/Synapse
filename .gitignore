@@ -27,3 +27,9 @@ data/
 Thumbs.db
 .idea/
 .vscode/
+
+# Stray scratch / debug output
+*.tmp
+.stderr.tmp
+.err.tmp
+rag_payload.json
