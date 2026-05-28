@@ -189,6 +189,31 @@ npm run dev          # http://localhost:3000
 The frontend expects the FastAPI backend on `http://localhost:8000`. Set
 `NEXT_PUBLIC_API_BASE` if you run it elsewhere.
 
+## Evaluate Graph RAG vs Naive RAG
+
+A RAGAS-style evaluation (Es et al. 2023) implemented in-house using the same
+LLM provider as the judge — no `ragas` package dependency, full transparency
+into the metric prompts (see [backend/app/eval/judge.py](backend/app/eval/judge.py)).
+Four metrics, scored 0–1:
+
+- **Faithfulness** — fraction of atomic claims in the answer supported by context
+- **Answer relevancy** — back-generated questions' semantic similarity to the original
+- **Context precision** — fraction of retrieved context items judged relevant
+- **Context recall** — fraction of reference-answer facts covered by retrieved context
+
+The eval set ([backend/app/eval/dataset.py](backend/app/eval/dataset.py)) is six
+**multi-hop** questions (where Graph RAG should shine) and three **single-hop**
+questions (sanity check — graph layer shouldn't degrade easy cases).
+
+```bash
+cd backend
+python -m app.eval.runner                  # all questions, both systems
+python -m app.eval.runner --ids mh01,mh02   # specific questions
+python -m app.eval.runner --no-cache        # bypass judgment cache
+```
+Results land in `data/eval/results.json` + `data/eval/report.md`
+(both gitignored — commit a hand-picked snapshot if the numbers belong in the repo).
+
 Run the tests:
 ```bash
 cd backend && python -m pytest -q
