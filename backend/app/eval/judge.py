@@ -23,6 +23,8 @@ logger = logging.getLogger(__name__)
 _CACHE_DIR = Path(__file__).resolve().parents[3] / "data" / "eval" / "judge_cache"
 
 _RATE_LIMIT_HINTS = ("rate_limit", "rate limit", "429", "tpm", "rpm", "quota", "exceeded")
+# Anything network-flavoured we'd also like to retry instead of dying mid-eval.
+_TRANSIENT_HINTS = ("timeout", "timed out", "connection error", "connection reset", "temporarily")
 
 
 class Judge:
@@ -70,9 +72,13 @@ class Judge:
                 continue
             except Exception as e:
                 msg = str(e).lower()
-                if any(h in msg for h in _RATE_LIMIT_HINTS) and attempt < retries - 1:
-                    wait = _parse_retry_after(str(e), default=delay)
-                    logger.warning("judge rate-limited; sleeping %.1fs (attempt %d)", wait, attempt + 1)
+                cls = type(e).__name__.lower()
+                is_rate = any(h in msg for h in _RATE_LIMIT_HINTS)
+                is_transient = any(h in msg or h in cls for h in _TRANSIENT_HINTS)
+                if (is_rate or is_transient) and attempt < retries - 1:
+                    wait = _parse_retry_after(str(e), default=delay) if is_rate else delay
+                    kind = "rate-limited" if is_rate else "transient network"
+                    logger.warning("judge %s; sleeping %.1fs (attempt %d)", kind, wait, attempt + 1)
                     time.sleep(wait + 1)
                     delay = min(delay * 2, 60.0)
                     continue
