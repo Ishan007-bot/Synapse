@@ -214,6 +214,21 @@ python -m app.eval.runner --no-cache        # bypass judgment cache
 Results land in `data/eval/results.json` + `data/eval/report.md`
 (both gitignored — commit a hand-picked snapshot if the numbers belong in the repo).
 
+**Snapshot results:** [docs/eval-results.md](docs/eval-results.md)
+
+Headline (4-question pilot, multi-hop subset):
+
+| | Naive RAG | Graph RAG |
+|---|---|---|
+| Faithfulness | 1.00 | 1.00 |
+| Answer relevancy | 0.83 | 0.88 |
+| **Context recall** | **0.48** | **0.92** |
+
+Graph RAG roughly doubles context recall on multi-hop questions — the structured graph
+brings in chunks from articles vector similarity alone never reaches — while keeping
+faithfulness equal (no extra hallucination). Context precision is lower for Graph RAG
+(0.54 vs 0.90), the expected cost of broader retrieval.
+
 Run the tests:
 ```bash
 cd backend && python -m pytest -q
