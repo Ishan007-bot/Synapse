@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type { Stats } from "@/lib/types";
+import { ThemeToggle } from "./ThemeToggle";
 import styles from "./Header.module.css";
 
 const fmt = (n: number) => n.toLocaleString();
@@ -35,6 +36,7 @@ export function Header() {
         <span className={`${styles.status} ${healthy === true ? styles.statusOk : healthy === false ? styles.statusErr : ""}`}>
           {healthy === true ? "online" : healthy === false ? "api offline" : "…"}
         </span>
+        <ThemeToggle />
       </div>
     </header>
   );

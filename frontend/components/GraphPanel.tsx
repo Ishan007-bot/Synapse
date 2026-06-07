@@ -33,6 +33,9 @@ export function GraphPanel({ payload, emptyHint }: Props) {
   const fgRef = useRef<any>(null);
   const [size, setSize] = useState({ w: 600, h: 540 });
   const [selected, setSelected] = useState<FGNode | null>(null);
+  // Canvas labels can't use CSS — we have to read --text manually and update
+  // when the theme changes (data-theme on <html>).
+  const [labelColor, setLabelColor] = useState("#3a342c");
 
   // Responsive sizing — keep the graph filling its neumorphic well.
   useEffect(() => {
@@ -43,6 +46,21 @@ export function GraphPanel({ payload, emptyHint }: Props) {
     });
     ro.observe(wrapRef.current);
     return () => ro.disconnect();
+  }, []);
+
+  // Track --text from CSS so canvas labels stay readable across themes.
+  // We watch the data-theme attribute on <html> so the swap is instant.
+  useEffect(() => {
+    const read = () => {
+      const c = getComputedStyle(document.documentElement).getPropertyValue("--text").trim();
+      if (c) setLabelColor(c);
+      // The simulation may have cooled — force one redraw so the new color shows.
+      fgRef.current?.refresh?.();
+    };
+    read();
+    const mo = new MutationObserver(read);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => mo.disconnect();
   }, []);
 
   // Convert the SubgraphPayload into the shape react-force-graph wants.
@@ -143,7 +161,7 @@ export function GraphPanel({ payload, emptyHint }: Props) {
           if (showLabel) {
             const fontSize = Math.max(9, 11 / Math.sqrt(scale));
             ctx.font = `500 ${fontSize}px "Sora", sans-serif`;
-            ctx.fillStyle = "#3a342c";
+            ctx.fillStyle = labelColor;
             ctx.textAlign = "center";
             ctx.textBaseline = "top";
             ctx.fillText(node.name, node.x, node.y + r + 4);
