@@ -24,18 +24,25 @@
 }
 
 .results {
-  display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  display: flex;
+  flex-direction: column;
   gap: var(--s-6);
 }
 
-.answerCol,
-.graphCol {
+.answerCol {
   min-width: 0;
-  min-height: 500px;
+  min-height: 320px;
 }
 
-.graphCol { display: flex; }
+.graphCol {
+  min-width: 0;
+  /* Tall enough for the force-graph to lay out comfortably without scrolling */
+  min-height: 78vh;
+  /* column flex so the well stretches to fill both axes (in row flex its
+     single child would size to content and leave horizontal gaps). */
+  display: flex;
+  flex-direction: column;
+}
 
 .footer {
   margin-top: var(--s-16);
@@ -48,11 +55,8 @@
   color: var(--text-faint);
 }
 
-@media (max-width: 1000px) {
-  .results { grid-template-columns: 1fr; }
-  .graphCol { min-height: 520px; }
-}
 @media (max-width: 720px) {
   .main { padding: 0 var(--s-5) var(--s-10); gap: var(--s-8); }
   .modeRow { flex-direction: column; align-items: flex-start; gap: var(--s-3); }
+  .graphCol { min-height: 70vh; }
 }
