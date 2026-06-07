@@ -56,15 +56,6 @@
   color: var(--text);
 }
 
-.tagline {
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-mute);
-  margin-top: 4px;
-}
-
 .stats {
   display: flex;
   align-items: center;

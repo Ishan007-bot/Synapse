@@ -24,7 +24,6 @@ export function Header() {
         <div className={styles.mark} aria-hidden />
         <div className={styles.name}>
           <span className={styles.wordmark}>Synapse</span>
-          <span className={styles.tagline}>graph rag · ai field</span>
         </div>
       </div>
 
