@@ -58,12 +58,20 @@ export function GraphPanel({ payload, emptyHint }: Props) {
     };
   }, [payload]);
 
-  // When new data arrives, briefly zoom out and re-center so the user sees the
-  // whole subgraph spring into place — small touch but reads as polish.
+  // When new data arrives:
+  //  1. Push the force config to spread nodes out — defaults are tuned for
+  //     much smaller canvases, so on the full-width well they bunch up.
+  //  2. Re-heat the simulation so it actually applies the new forces.
+  //  3. Zoom-to-fit once it settles — reads as polish, and keeps everything
+  //     visible regardless of how many seed entities we got.
   useEffect(() => {
     if (!fgRef.current || data.nodes.length === 0) return;
     const fg = fgRef.current;
-    const t = setTimeout(() => fg.zoomToFit(420, 60), 220);
+    // Stronger node-node repulsion + longer links == roomier graph.
+    fg.d3Force("charge").strength(-260);
+    fg.d3Force("link").distance(75).strength(0.4);
+    fg.d3ReheatSimulation();
+    const t = setTimeout(() => fg.zoomToFit(500, 90), 700);
     return () => clearTimeout(t);
   }, [data]);
 
