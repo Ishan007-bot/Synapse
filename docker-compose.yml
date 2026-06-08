@@ -1,4 +1,18 @@
+# ──────────────────────────────────────────────────────────────────────────
+# Synapse — one-command full stack.
+#
+#   docker compose up -d --build         # bring up neo4j + backend + frontend
+#   docker compose exec backend python -m app.ingestion.pipeline --embed
+#   docker compose exec backend python -m app.graph.build
+#
+# After the two seed commands you'll have a fully populated knowledge graph
+# behind both the API (:8000) and the UI (:3000). Re-runs of `compose up` are
+# fast because the Neo4j data volume + the model weights bake into the images
+# are persistent.
+# ──────────────────────────────────────────────────────────────────────────
+
 services:
+
   neo4j:
     image: neo4j:5.26
     container_name: synapse-neo4j
@@ -6,11 +20,8 @@ services:
       - "7474:7474"   # Neo4j Browser (http://localhost:7474)
       - "7687:7687"   # Bolt driver (used by the backend)
     environment:
-      # user/password — keep in sync with NEO4J_USER / NEO4J_PASSWORD in .env
-      - NEO4J_AUTH=neo4j/graphrag123
-      # APOC procedures are handy for graph work in later phases
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-graphrag123}
       - NEO4J_PLUGINS=["apoc"]
-      # give the graph some memory headroom
       - NEO4J_server_memory_heap_max__size=1G
     volumes:
       - neo4j_data:/data
@@ -20,6 +31,40 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: synapse-backend
+    ports:
+      - "8000:8000"
+    # The .env at the repo root supplies GROQ_API_KEY / GEMINI_API_KEY etc.
+    env_file:
+      - .env
+    environment:
+      # Override the .env's `bolt://localhost:7687` — inside the docker network
+      # neo4j is reachable by service name.
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-graphrag123}
+    depends_on:
+      neo4j:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        # The browser hits this from the user's machine, so it goes through
+        # the host-mapped port — not the docker DNS name.
+        NEXT_PUBLIC_API_BASE: ${API_BASE_PUBLIC:-http://localhost:8000}
+    container_name: synapse-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
 
 volumes:
   neo4j_data:
