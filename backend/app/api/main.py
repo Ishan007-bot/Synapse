@@ -18,12 +18,14 @@ import json
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, File, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from ..graph_rag import GraphRAG
+from ..ingestion.loaders import SUPPORTED_EXTS, load_bytes
+from ..ingestion.pipeline import ingest_documents
 from ..schemas import (
     ChunkInfo,
     GraphEdge,
@@ -131,6 +133,17 @@ class Stats(BaseModel):
     mentions: int
 
 
+class IngestResponse(BaseModel):
+    documents_ingested: int
+    chunks_created: int
+    chunks_embedded: int
+    documents_in_db: int
+    chunks_in_db: int
+    accepted: list[str] = Field(default_factory=list)
+    skipped: list[dict] = Field(default_factory=list)
+    note: str
+
+
 # ── Endpoints ─────────────────────────────────────────────────────────────
 
 
@@ -236,6 +249,85 @@ def query_naive(req: NaiveQueryRequest) -> NaiveAnswer:
             sources.append(SourceInfo(name=c.source, score=c.score, via="vector"))
             seen.add(c.source)
     return NaiveAnswer(answer=text, sources=sources, chunks=chunk_infos)
+
+
+# Per-file size cap for uploads. Keep this small for a portfolio app —
+# the LLM extraction step downstream is what makes huge ingests painful.
+_MAX_FILE_BYTES = 25 * 1024 * 1024  # 25 MB
+
+
+@app.post("/ingest", response_model=IngestResponse, tags=["ingestion"])
+async def ingest(files: list[UploadFile] = File(...)) -> IngestResponse:
+    """Upload one or more documents (pdf/txt/md) and ingest them into Neo4j.
+
+    Each file is parsed → chunked → embedded → stored as
+    ``(:Document)-[:HAS_CHUNK]->(:Chunk)``. The new chunks are queryable via
+    `/query` and `/query/naive` immediately. They do NOT yet appear in the
+    knowledge graph — that requires running ``python -m app.graph.build``
+    (the LLM extraction step), which is slow enough that we keep it out of
+    the request path.
+    """
+    rag = _rag()
+    documents = []
+    skipped: list[dict] = []
+
+    for f in files:
+        name = f.filename or "upload"
+        data = await f.read()
+        if len(data) > _MAX_FILE_BYTES:
+            skipped.append({"file": name, "reason": f"exceeds {_MAX_FILE_BYTES} bytes"})
+            continue
+        doc = load_bytes(name, data)
+        if doc is None:
+            skipped.append({
+                "file": name,
+                "reason": f"unsupported extension (allowed: {sorted(SUPPORTED_EXTS)})",
+            })
+            continue
+        if not doc.text.strip():
+            skipped.append({"file": name, "reason": "empty text after parsing"})
+            continue
+        documents.append(doc)
+
+    if not documents:
+        # Nothing to do — return a clean response so the UI can surface skips.
+        c = rag.client
+        docs_in_db = c.query("MATCH (d:Document) RETURN count(d) AS n")[0]["n"]
+        chunks_in_db = c.query("MATCH (c:Chunk) RETURN count(c) AS n")[0]["n"]
+        return IngestResponse(
+            documents_ingested=0,
+            chunks_created=0,
+            chunks_embedded=0,
+            documents_in_db=docs_in_db,
+            chunks_in_db=chunks_in_db,
+            accepted=[],
+            skipped=skipped,
+            note="No supported files in the upload.",
+        )
+
+    summary = ingest_documents(
+        documents,
+        chunk_size=800,
+        chunk_overlap=120,
+        do_reset=False,
+        also_embed=True,
+        embedder=rag.embedder,  # reuse the already-loaded model — no second load
+        verbose=False,
+    )
+
+    return IngestResponse(
+        documents_ingested=summary["documents_ingested"],
+        chunks_created=summary["ingested_chunks"],
+        chunks_embedded=summary["embedded"],
+        documents_in_db=summary["documents_in_db"],
+        chunks_in_db=summary["chunks_in_db"],
+        accepted=summary["titles"],
+        skipped=skipped,
+        note=(
+            "Chunks are queryable now. To make these documents part of the knowledge "
+            "graph (entities + relations for Graph RAG), run `python -m app.graph.build`."
+        ),
+    )
 
 
 @app.get("/graph", response_model=SubgraphPayload, tags=["graph"])
