@@ -66,3 +66,19 @@ export interface Stats {
   entity_relations: number;
   mentions: number;
 }
+
+export interface IngestSkip {
+  file: string;
+  reason: string;
+}
+
+export interface IngestResponse {
+  documents_ingested: number;
+  chunks_created: number;
+  chunks_embedded: number;
+  documents_in_db: number;
+  chunks_in_db: number;
+  accepted: string[];
+  skipped: IngestSkip[];
+  note: string;
+}
