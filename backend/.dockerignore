@@ -1,0 +1,21 @@
+# Python build artifacts and local environment
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Tests aren't needed at runtime
+tests/
+
+# Local virtualenv (the image creates its own)
+.venv/
+venv/
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Don't bake secrets in
+.env
