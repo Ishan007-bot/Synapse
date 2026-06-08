@@ -1,8 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type { Stats } from "@/lib/types";
 import { ThemeToggle } from "./ThemeToggle";
+import { UploadButton } from "./UploadButton";
 import styles from "./Header.module.css";
 
 const fmt = (n: number) => n.toLocaleString();
@@ -11,13 +12,19 @@ export function Header() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [healthy, setHealthy] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
+  const refresh = useCallback(() => {
     api.stats()
-      .then((s) => !cancelled && (setStats(s), setHealthy(true)))
-      .catch(() => !cancelled && setHealthy(false));
-    return () => { cancelled = true; };
+      .then((s) => { setStats(s); setHealthy(true); })
+      .catch(() => setHealthy(false));
   }, []);
+
+  useEffect(() => {
+    refresh();
+    // UploadButton fires this custom event after a successful POST /ingest.
+    const onIngested = () => refresh();
+    window.addEventListener("synapse:ingested", onIngested);
+    return () => window.removeEventListener("synapse:ingested", onIngested);
+  }, [refresh]);
 
   return (
     <header className={styles.header}>
@@ -36,6 +43,7 @@ export function Header() {
         <span className={`${styles.status} ${healthy === true ? styles.statusOk : healthy === false ? styles.statusErr : ""}`}>
           {healthy === true ? "online" : healthy === false ? "api offline" : "…"}
         </span>
+        <UploadButton />
         <ThemeToggle />
       </div>
     </header>

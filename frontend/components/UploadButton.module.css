@@ -1,0 +1,377 @@
+/* ── Trigger (header button) ─────────────────────────────────────────── */
+
+.trigger {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--neu-flat);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  transition: box-shadow var(--transition-fast), color var(--transition-fast),
+              transform var(--transition-fast);
+  flex-shrink: 0;
+}
+.trigger:hover {
+  box-shadow: var(--neu-raised);
+  color: var(--accent-deep);
+  transform: translateY(-1px);
+}
+.trigger:active {
+  box-shadow: var(--neu-pressed);
+  transform: translateY(1px);
+}
+
+/* ── Backdrop + modal ────────────────────────────────────────────────── */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(20, 16, 10, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: grid;
+  place-items: center;
+  padding: var(--s-6);
+  animation: backdrop-in 220ms ease-out;
+}
+
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal {
+  width: min(580px, 100%);
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  /* The modal floats above the page — use the raised-lg shadow plus a
+     subtle outer drop for separation against the blurred backdrop. */
+  box-shadow: var(--neu-raised-lg),
+              0 30px 60px -20px rgba(0, 0, 0, 0.35);
+  padding: var(--s-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+  animation: modal-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 500;
+  font-variation-settings: "SOFT" 80, "opsz" 36;
+  color: var(--text);
+}
+
+.closeBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--neu-flat);
+  color: var(--text-mute);
+  display: grid;
+  place-items: center;
+  transition: box-shadow var(--transition-fast), color var(--transition-fast);
+}
+.closeBtn:hover:not(:disabled) {
+  color: var(--text);
+  box-shadow: var(--neu-raised);
+}
+.closeBtn:active:not(:disabled) {
+  box-shadow: var(--neu-pressed);
+}
+.closeBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Drop zone ───────────────────────────────────────────────────────── */
+
+.drop {
+  background: var(--surface);
+  border-radius: var(--r);
+  box-shadow: var(--neu-pressed);
+  padding: var(--s-10) var(--s-6);
+  text-align: center;
+  cursor: pointer;
+  transition: box-shadow var(--transition-fast);
+  /* dashed outline so the drag-and-drop affordance reads without breaking
+     the neumorphism (we keep the inner-shadow well underneath). */
+  outline: 2px dashed rgba(110, 101, 87, 0.28);
+  outline-offset: -10px;
+}
+.drop:hover {
+  outline-color: var(--accent-soft);
+}
+.dropActive {
+  outline-color: var(--accent);
+  outline-style: solid;
+  outline-width: 2px;
+  background-color: var(--surface-paper);
+}
+
+.dropInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.dropIcon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--neu-raised);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+}
+
+.dropTitle {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-variation-settings: "SOFT" 80, "opsz" 24;
+  color: var(--text);
+  margin: 0;
+}
+
+.dropHint {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin: 0;
+}
+
+/* ── File list ───────────────────────────────────────────────────────── */
+
+.fileList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.fileItem {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--s-3);
+  padding: 10px 14px;
+  background: var(--surface);
+  border-radius: var(--r-sm);
+  box-shadow: var(--neu-flat);
+}
+
+.fileName {
+  font-size: 0.92rem;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileSize {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  color: var(--text-mute);
+}
+
+.removeFile {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--neu-flat);
+  color: var(--text-mute);
+  display: grid;
+  place-items: center;
+  transition: color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.removeFile:hover:not(:disabled) {
+  color: #b94c4c;
+  box-shadow: var(--neu-raised);
+}
+.removeFile:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* ── Actions + error ─────────────────────────────────────────────────── */
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  flex-wrap: wrap;
+}
+
+.tip {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-mute);
+  max-width: 32ch;
+  line-height: 1.5;
+}
+.tip code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: var(--neu-pressed);
+  color: var(--accent);
+}
+
+.uploadBtn {
+  padding: 12px 24px;
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  box-shadow: var(--neu-raised);
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.94rem;
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast),
+              color var(--transition-fast);
+}
+.uploadBtn:hover:not(:disabled) {
+  box-shadow: var(--neu-raised-lg);
+  color: var(--accent-deep);
+  transform: translateY(-1px);
+}
+.uploadBtn:active:not(:disabled) {
+  box-shadow: var(--neu-pressed);
+  transform: translateY(1px);
+}
+.uploadBtn:disabled {
+  color: var(--text-faint);
+  cursor: not-allowed;
+}
+
+.secondaryBtn {
+  padding: 11px 20px;
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  box-shadow: var(--neu-flat);
+  color: var(--text-mid);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  transition: box-shadow var(--transition-fast), color var(--transition-fast);
+}
+.secondaryBtn:hover { color: var(--text); box-shadow: var(--neu-raised); }
+.secondaryBtn:active { box-shadow: var(--neu-pressed); }
+
+.error {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  box-shadow: var(--neu-pressed);
+  color: #b94c4c;
+  font-size: 0.86rem;
+  white-space: pre-line;
+}
+
+/* ── Success result ──────────────────────────────────────────────────── */
+
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.resultHeadline {
+  margin: 0;
+  padding: var(--s-4) var(--s-5);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--neu-flat);
+  color: var(--text);
+  font-size: 0.98rem;
+  line-height: 1.55;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+
+.checkmark {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--surface);
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.acceptedList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.acceptedList li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--text-mid);
+}
+.acceptedDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+}
+
+.skipped {
+  font-size: 0.86rem;
+  color: var(--text-mute);
+}
+.skipped summary {
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  box-shadow: var(--neu-pressed);
+  display: inline-block;
+  color: var(--text-mid);
+}
+.skipped ul {
+  margin: var(--s-3) 0 0;
+  padding-left: var(--s-5);
+}
+
+.note {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-mute);
+  line-height: 1.55;
+  font-style: italic;
+}
