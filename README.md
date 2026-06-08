@@ -260,7 +260,6 @@ the same Pydantic model:
 .
 ├── docker-compose.yml          # Neo4j + backend + frontend
 ├── .env.example                # config template (LLM keys, Neo4j creds)
-├── PLAN.md                     # the full roadmap (phases 0–9)
 ├── docs/
 │   └── eval-results.md         # committed snapshot of the eval
 ├── backend/
