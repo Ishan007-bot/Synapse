@@ -23,6 +23,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
+from ..config import settings
 from ..graph_rag import GraphRAG
 from ..ingestion.loaders import SUPPORTED_EXTS, load_bytes
 from ..ingestion.pipeline import ingest_documents
@@ -82,14 +83,13 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Permissive CORS for local development (Next.js defaults to :3000).
+# Allowed origins come from the ALLOWED_ORIGINS env var (comma-separated).
+# The default covers local dev; in production set it to your deployed
+# frontend URL, e.g. ALLOWED_ORIGINS=https://synapse-ui.vercel.app
+_origins = [o.strip() for o in settings.allowed_origins.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

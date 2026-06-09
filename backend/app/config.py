@@ -46,5 +46,9 @@ class Settings(BaseSettings):
     query_instruction: str = "Represent this sentence for searching relevant passages: "
     top_k: int = 5
 
+    # CORS — comma-separated origins the API will accept. In prod set this
+    # to your deployed frontend URL, e.g. https://synapse-ui.vercel.app.
+    allowed_origins: str = "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000"
+
 
 settings = Settings()
