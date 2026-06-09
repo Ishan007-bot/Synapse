@@ -65,6 +65,9 @@ Open:
 - **API docs** (Swagger) — http://localhost:8000/docs
 - **Neo4j Browser** — http://localhost:7474 (`neo4j` / `graphrag123`)
 
+Deploying it for free (Neo4j Aura + Hugging Face Spaces + Vercel)?
+See [`deploy/DEPLOYMENT.md`](deploy/DEPLOYMENT.md).
+
 Free API keys: [Groq](https://console.groq.com/keys) (recommended, default in `.env`) or
 [Gemini](https://aistudio.google.com/apikey).
 
